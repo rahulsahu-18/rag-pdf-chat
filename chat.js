@@ -1,7 +1,8 @@
 import readline from "readline/promises";
-
+import { vectorStore } from "./vector.js";
 import Groq from "groq-sdk";
-import { vectorStore } from "./prepair.js";
+import dotenv from "dotenv"
+dotenv.config();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API });
 async function chat() {

@@ -1,18 +1,11 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
-import dotenv from "dotenv";
+import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 
-dotenv.config();
+async function main(params) {
+  const filepath = "./285_OOPS lecture notes Complete.pdf";
 
-const embeddings = new HuggingFaceTransformersEmbeddings({
-  model: "Xenova/all-MiniLM-L6-v2",
-});
-
-// 1. Load PDF
-
-export async function indexDocument(filepath) {
   const loader = new PDFLoader(filepath, {
     splitPages: false,
   });
@@ -27,8 +20,6 @@ export async function indexDocument(filepath) {
 
   const chunks = await splitter.splitDocuments(docs);
 
-  console.log("Total chunks:", chunks.length);
-
   const cleanedChunks = chunks.map((doc) => ({
     ...doc,
     metadata: {
@@ -36,12 +27,16 @@ export async function indexDocument(filepath) {
     },
   }));
 
-  const vectorstore = await Chroma.fromDocuments(cleanedChunks, embeddings, {
+  const embeddings = new HuggingFaceTransformersEmbeddings({
+    model: "Xenova/all-MiniLM-L6-v2",
+  });
+
+  await Chroma.fromDocuments(cleanedChunks, embeddings, {
     collectionName: "oops-notes-v2",
     host: "localhost",
     port: 8000,
     ssl: false,
   });
-
-  return vectorstore;
 }
+
+main();
